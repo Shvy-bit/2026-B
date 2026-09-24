@@ -177,8 +177,22 @@ void InsertionSort ( RandomIt b, RandomIt e ) {
 
 template < class RandomIt, class Compare >
 void InsertionSort ( RandomIt b, RandomIt e, Compare comp ) {
-  // IMPLEMENTE AQUÃ
+  if (!std::distance(b, e)) return;
 
+  for (RandomIt s = b + 1; std::distance(s, e); s++) {
+    cont_comparaciones++;
+    if (comp(s[-1], *s)) continue;
+
+    RandomIt i = s - 2;
+    while(comp(*s, *i)) {
+      cont_comparaciones++;
+      cont_escrituras++;
+      //if (!std::distance(b, i)) break;
+      i--; //Bajo la certeza que en la rotación se le aumentara en 1, i puede apuntar a index -1
+    };
+    cont_escrituras += 2; //Para tener en cuenta el desplazamiento
+    std::rotate(i + 1, s, s + 1);
+  }
 }
 
 
@@ -297,7 +311,7 @@ void EvaluaOrdenamientos ( ) {
 
     EvaluaOrdenamiento<&SelectionSort>("Sel");
     EvaluaOrdenamiento<&HeapSort>("Heap");
-    // EvaluaOrdenamiento<&InsertionSort>("Ins");
+    EvaluaOrdenamiento<&InsertionSort>("Ins");
     // EvaluaOrdenamiento<&MergeSort>("Merge");
     // EvaluaOrdenamiento<&QuickSort>("Quick");
     // EvaluaOrdenamiento<&IntroSort>("Intro");
