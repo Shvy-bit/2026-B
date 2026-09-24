@@ -54,7 +54,7 @@ void MergeSort ( RandomIt b, RandomIt e ) ;
 template < class RandomIt, class Compare >
 void MergeSort ( RandomIt b, RandomIt e, Compare comp );
 template < class RandomIt, class Compare >
-void MergeSortC ( RandomIt b, RandomIt e, Compare comp, RandomIt ob );
+void MergeSortC ( RandomIt b, RandomIt e, Compare comp);
 
 template < class RandomIt >
 void QuickSort ( RandomIt b, RandomIt e ) ;
@@ -88,11 +88,11 @@ template < class RandomIt, class Compare >
 void SelectionSort ( RandomIt b, RandomIt e, Compare comp ) {
 
   // Para todos los elementos (menos el Ãºltimo)
-  for (RandomIt s = b; std::distance ( s, e - 1 ) /* > 0 */; s++ ) {
+  for (RandomIt s = b; distance ( s, e - 1 ) /* > 0 */; s++ ) {
 
     // Buscar el elemento m con menor (o mayor) llave
     RandomIt m = s;
-    for ( RandomIt i = s + 1; std::distance ( i, e ) /* > 0 */; i++ ) {
+    for ( RandomIt i = s + 1; distance ( i, e ) /* > 0 */; i++ ) {
       cont_comparaciones++;
       if ( comp ( *i, *m ) ) m = i;
     }
@@ -118,12 +118,12 @@ void HeapSort ( RandomIt b, RandomIt e, Compare comp ) {
   // Basado en Floyd (1964) pero con raÃ­z:0; padre_i:(i-1)/2; hijos_i:2*i+1,2*i+2;
 
   // BottomUpBuildHeap: Construye heap desde el Ãºltimo padre hacia arriba
-  for ( RandomIt i = b + ( std::distance ( b, e ) - 2 ) / 2; std::distance ( b, i ) /* > 0 */; --i )
+  for ( RandomIt i = b + ( distance ( b, e ) - 2 ) / 2; distance ( b, i ) /* > 0 */; --i )
     HeapSiftUp ( b, e, i, comp );
   // Nota: Deja el Ãºltimo SiftUp para ser el primero del siguiente ciclo
 
   // Repitiendo repara la heap y retira el primer elemento de la heap
-  for ( RandomIt i = e; std::distance ( b, i ) > 1; ) {
+  for ( RandomIt i = e; distance ( b, i ) > 1; ) {
     HeapSiftUp ( b, i, b, comp );
     cont_escrituras+=3;
     --i; swap ( *i, *b );
@@ -139,7 +139,7 @@ void HeapSiftUp ( RandomIt b, RandomIt e, RandomIt i, Compare comp ) {
   auto t = *i;
 
   // selecciona al primer hijo
-  RandomIt c = b + 2*std::distance ( b, i ) + 1;
+  RandomIt c = b + 2*distance ( b, i ) + 1;
 
   // mientras existan hijos
   while ( c < e ) {
@@ -158,7 +158,7 @@ void HeapSiftUp ( RandomIt b, RandomIt e, RandomIt i, Compare comp ) {
       *i = *c;
       i = c;
       // y selecciona al siguiente hijo
-      c = b + 2*std::distance ( b, i ) + 1;
+      c = b + 2*distance ( b, i ) + 1;
     } else break;
   }
 
@@ -177,9 +177,9 @@ void InsertionSort ( RandomIt b, RandomIt e ) {
 
 template < class RandomIt, class Compare >
 void InsertionSort ( RandomIt b, RandomIt e, Compare comp ) {
-  if (!std::distance(b, e)) return;
+  if (!distance(b, e)) return;
 
-  for (RandomIt s = b + 1; std::distance(s, e); s++) {
+  for (RandomIt s = b + 1; distance(s, e); s++) {
     cont_comparaciones++;
     if (comp(s[-1], *s)) continue;
 
@@ -187,11 +187,11 @@ void InsertionSort ( RandomIt b, RandomIt e, Compare comp ) {
     while(comp(*s, *i)) {
       cont_comparaciones++;
       cont_escrituras++;
-      //if (!std::distance(b, i)) break;
+      //if (!distance(b, i)) break;
       i--; //Bajo la certeza que en la rotación se le aumentara en 1, i puede apuntar a index -1
     };
     cont_escrituras += 2; //Para tener en cuenta el desplazamiento
-    std::rotate(i + 1, s, s + 1);
+    rotate(i + 1, s, s + 1);
   }
 }
 
@@ -200,26 +200,34 @@ void InsertionSort ( RandomIt b, RandomIt e, Compare comp ) {
 
 template < class RandomIt >
 void MergeSort ( RandomIt b, RandomIt e ) {
-  MergeSort ( b, e, less<decltype(*(b))>() );
+  MergeSort ( b, e, less_equal<decltype(*(b))>() );
 }
 
 template < class RandomIt, class Compare >
 void MergeSort ( RandomIt b, RandomIt e, Compare comp ) {
-  if ( std::distance ( b, e ) <= 1 ) return;
-
-  // Hace una sola copia y luego llama a la funciÃ³n de ayuda
-  typedef typename std::iterator_traits<RandomIt>::value_type ItVT;
-  std::vector < ItVT > A ( b, e ); // copia [b,e)
-  MergeSortC ( A.begin(), A.end(), comp, b );
+  if ( distance ( b, e ) <= 1 ) return;
+  MergeSortC ( b, e, comp);
 }
 
 template < class RandomIt, class Compare >
-void MergeSortC ( RandomIt b, RandomIt e, Compare comp, RandomIt ob ) {
-  // Recuerde: Ordene la copia existente en [b, m) y [m, e) mezclando en [ ob, ob +{e-b} )
-  // Recomiendo calcular primero las posiciones para		RandomIt m, om, oe;
-  // No necesita implementar Merge por separado, puede implementarlo al final dentro de esta funciÃ³n
-  // IMPLEMENTE AQUÃ
+void MergeSortC ( RandomIt b, RandomIt e, Compare comp) {
+  if (distance(b, e) <= 1) return;
 
+  RandomIt m = b + distance ( b, e ) / 2;
+  MergeSortC ( b, m, comp);
+  MergeSortC ( m, e, comp);
+
+  while (distance(b, m)) {
+    cont_comparaciones++;
+    if (comp(*m, *b)) {
+      rotate(b, m, m + 1);
+      cont_escrituras += distance(b, e);
+      cont_escrituras += 2;
+      m++;
+      if (!distance(m, e)) break;
+    }
+    b++;
+  }
 }
 
 
@@ -234,7 +242,7 @@ template < class RandomIt, class Compare >
 void QuickSort ( RandomIt b, RandomIt e, Compare comp ) {
 
   // Cambia a InsertionSort con threshold 16
-  if ( std::distance ( b, e ) <= 16 ) {
+  if ( distance ( b, e ) <= 16 ) {
     InsertionSort ( b, e, comp );
     return;
   }
@@ -300,8 +308,8 @@ void EvaluaOrdenamiento ( string s_ordenamiento ) {
 
 void EvaluaOrdenamientos ( ) {
   //Inicia pruebas
-  // vector<int> T = {4096,32768,262144,2097152,16777216,134217728,1073741824};
-  vector<int> T = {16,64,256,1024,4096,16384,65536};
+  //vector<int> T = {4096,32768,262144,2097152,16777216,134217728,1073741824};
+  vector<int> T = {16, 64,256,1024,4096,16384,65536};
   Rand.seed(CUI);
   cout << "Algo.\tN\ttiempo\tcomps.\tescrts.\tlects." << endl;
   for ( int i = N_REPS; i /* > 0 */; --i ) for ( auto t : T ) {
@@ -312,7 +320,7 @@ void EvaluaOrdenamientos ( ) {
     EvaluaOrdenamiento<&SelectionSort>("Sel");
     EvaluaOrdenamiento<&HeapSort>("Heap");
     EvaluaOrdenamiento<&InsertionSort>("Ins");
-    // EvaluaOrdenamiento<&MergeSort>("Merge");
+    EvaluaOrdenamiento<&MergeSort>("Merge");
     // EvaluaOrdenamiento<&QuickSort>("Quick");
     // EvaluaOrdenamiento<&IntroSort>("Intro");
   }
