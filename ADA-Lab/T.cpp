@@ -8,7 +8,7 @@ using namespace std;
 vector<int> V,W;
 
 /* \ \ \ \ \ / / / / / */
-constexpr int CUI = 20000000; //Reemplace por su propio CUI
+constexpr int CUI = 20251200; //Reemplace por su propio CUI
 /* / / / / / \ \ \ \ \ */
 
 constexpr int N_REPS = 1;
